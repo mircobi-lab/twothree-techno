@@ -1,0 +1,36 @@
+# A ogni aggiornamento di main crea una versione nella pagina Releases con lo zip dell'app pronto da usare.
+name: Pubblica
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pubblica
+  cancel-in-progress: true
+
+jobs:
+  zip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepara lo zip
+        run: |
+          mkdir -p "TwoThree Techno Machine"
+          cp -R index.html icons README.md "TwoThree Techno Machine/"
+          [ -d fonts ] && cp -R fonts fonts-apps.css "TwoThree Techno Machine/" || true
+          zip -qr twothree-techno.zip "TwoThree Techno Machine"
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          make_latest: true
+          name: TwoThree Techno Machine 1.0.${{ github.run_number }}
+          body: |
+            Scarica twothree-techno.zip, estrailo e apri index.html con doppio clic (Chrome, Safari, Edge o Firefox).
+            Funziona anche senza internet.
+          files: twothree-techno.zip
